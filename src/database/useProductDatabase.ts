@@ -51,7 +51,51 @@ export function useProductDatabase() {
         }
     }
 
+    async function update(data: ProductDatabase) {
+        const statement = await database.prepareAsync(
+            "UPDATE products SET name = $name, quantity = $quantity, barcode = $barcode, description = $description, custo = $custo, venda = $venda WHERE id = $id"
+        )
+
+        try {
+            await statement.executeAsync({
+                $id: data.id,
+                $name: data.name,
+                $quantity: data.quantity,
+                $barcode: data.barcode,
+                $description: data.description,
+                $custo: data.custo,
+                $venda: data.venda
+            })
+        } catch (error) {
+            throw error
+        } finally {
+            await statement.finalizeAsync()
+        }
+    }
+
+    async function remove(id: number) {
+        try {
+            await database.execAsync("DELETE FROM products WHERE id = " + id)
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async function show(id: number) {
+        try {
+            const query = "SELECT * FROM products WHERE id = ?"
+
+            const response = await database.getFirstAsync<ProductDatabase>(query, [
+                id,
+            ])
+
+            return response
+        } catch (error) {
+            throw error
+        }
+    }
+
     return {
-        create, searchByName
+        create, searchByName, update, remove, show
     }
 }
